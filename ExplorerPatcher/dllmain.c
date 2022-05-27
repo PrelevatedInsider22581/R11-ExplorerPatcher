@@ -9427,6 +9427,19 @@ DWORD InjectBasicFunctions(BOOL bIsExplorer, BOOL bInstall)
     }
 }
 
+HRESULT shell32_CoCreateInstanceHook(
+    REFCLSID   rclsid,
+    LPUNKNOWN  pUnkOuter,
+    DWORD      dwClsContext,
+    REFIID     riid,
+    IUnknown** ppv
+)
+{
+    printf("shell32_CoCreateInstanceHook\n");
+    return CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
+}
+
+
 INT64(*twinui_pcshell_IsUndockedAssetAvailableFunc)(INT a1, INT64 a2, INT64 a3, const char* a4);
 INT64 twinui_pcshell_IsUndockedAssetAvailableHook(INT a1, INT64 a2, INT64 a3, const char* a4)
 {
@@ -10096,6 +10109,8 @@ DWORD Inject(BOOL bIsExplorer)
                 }
             }
         }
+
+        VnPatchIAT(hShell32, "api-ms-win-core-com-l1-1-0.dll", "CoCreateInstance", shell32_CoCreateInstanceHook);
 
         // Allow clasic drive groupings in This PC
         HRESULT(*SHELL32_DllGetClassObject)(REFCLSID rclsid, REFIID riid, LPVOID* ppv) = GetProcAddress(hShell32, "DllGetClassObject");
